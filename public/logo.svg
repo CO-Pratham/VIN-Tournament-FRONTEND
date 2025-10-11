@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="logoGradient" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" stop-color="#FF0040"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#0066FF"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Outer Circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#logoGradient)"/>
+  
+  <!-- Controller Body -->
+  <rect x="170" y="210" width="172" height="92" rx="46" ry="46" fill="white"/>
+  
+  <!-- D-Pad Circle -->
+  <circle cx="220" cy="256" r="36" fill="none" stroke="#8B5CF6" stroke-width="4"/>
+  
+  <!-- D-Pad Cross -->
+  <rect x="210" y="240" width="20" height="32" rx="2" fill="#C41E3A"/>
+  <rect x="204" y="246" width="32" height="20" rx="2" fill="#C41E3A"/>
+  
+  <!-- Action Buttons -->
+  <circle cx="292" cy="240" r="8" fill="#4F46E5"/>
+  <circle cx="292" cy="272" r="8" fill="#4F46E5"/>
+</svg>
