@@ -12,7 +12,12 @@ import {
   Gamepad2,
   Award,
   TrendingUp,
+  Shield,
+  AlertCircle,
+  Camera,
 } from "lucide-react";
+import GameBadges from "../components/GameBadges";
+import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
@@ -23,7 +28,9 @@ export default function Profile() {
     name: "",
     email: "",
     favoriteGame: "",
+    avatar: null,
   });
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   useEffect(() => {
     if (userProfile) {
@@ -40,6 +47,18 @@ export default function Profile() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, avatar: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = async () => {
@@ -122,8 +141,29 @@ export default function Profile() {
           {/* Header */}
           <div className="bg-gradient-to-r from-cyan-500/20 to-pink-500/20 p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="w-24 h-24 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full flex items-center justify-center">
-                <User size={40} className="text-white" />
+              <div className="relative w-24 h-24 rounded-full overflow-hidden group">
+                {userProfile?.avatar || avatarPreview ? (
+                  <img 
+                    src={avatarPreview || userProfile.avatar} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-r from-cyan-500 to-pink-500 flex items-center justify-center">
+                    <User size={40} className="text-white" />
+                  </div>
+                )}
+                {isEditing && (
+                  <label className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera size={20} className="text-white" />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
               <div className="text-center sm:text-left flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
@@ -156,7 +196,7 @@ export default function Profile() {
           {/* Stats */}
           <div className="p-6 sm:p-8">
             <h2 className="text-xl font-bold text-white mb-6">Gaming Statistics</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {stats.map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -173,6 +213,9 @@ export default function Profile() {
                 </motion.div>
               ))}
             </div>
+            
+            {/* Gaming Badges */}
+            <GameBadges badges={userProfile?.badges} user={userProfile} />
           </div>
 
           {/* Edit Form */}

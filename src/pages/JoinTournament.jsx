@@ -6,7 +6,7 @@ import {
   MapPin, FileText, AlertCircle, Check, X, CreditCard 
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { tournamentService } from "../services/tournamentService";
+import { djangoService } from "../services/djangoService";
 import toast from "react-hot-toast";
 
 
@@ -28,7 +28,7 @@ export default function JoinTournament() {
 
   const fetchTournament = async () => {
     try {
-      const data = await tournamentService.getTournamentById(id);
+      const data = await djangoService.getTournamentById(id);
       setTournament(data);
       setParticipantCount(data.participants?.length || 0);
     } catch (error) {
@@ -62,7 +62,7 @@ export default function JoinTournament() {
   const completeTournamentJoin = async () => {
     setJoining(true);
     try {
-      await tournamentService.joinTournament(tournament.id, currentUser.uid);
+      await djangoService.joinTournament(tournament.id);
       toast.success("Successfully joined tournament!");
       navigate("/tournaments");
     } catch (error) {

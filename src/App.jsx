@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { store } from "./store/store";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import LoadingScreen from "./components/LoadingScreen";
 
 import Home from "./pages/Home";
@@ -20,6 +21,8 @@ import Leaderboard from "./pages/Leaderboard";
 import PublicProfile from "./pages/PublicProfile";
 import PlayerSearch from "./pages/PlayerSearch";
 import TestAuth from "./pages/TestAuth";
+import AdminPanel from "./pages/AdminPanel";
+import Settings from "./pages/Settings";
 
 
 function AppContent() {
@@ -41,23 +44,32 @@ function AppContent() {
           <Route path="/player/:userId" element={<PublicProfile />} />
           <Route path="/players" element={<PlayerSearch />} />
           <Route path="/test-auth" element={<TestAuth />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/settings" element={<Settings />} />
 
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }
 
 export default function App() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // Only show loading screen if this is the first visit
+    return !sessionStorage.getItem('hasVisited');
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 5500);
+    if (loading) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+        sessionStorage.setItem('hasVisited', 'true');
+      }, 5500);
 
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   if (loading) {
     return <LoadingScreen />;

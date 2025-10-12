@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User, Gamepad2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Gamepad2, Check, X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -15,6 +15,9 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState(null); // null, 'checking', 'available', 'taken'
+  const [checkingUsername, setCheckingUsername] = useState(false);
+
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -23,7 +26,64 @@ export default function Register() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    
+    if (e.target.name === 'username') {
+      setUsernameStatus(null);
+    }
   };
+
+  // Username availability check
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (formData.username.length < 3) {
+        setUsernameStatus(null);
+        return;
+      }
+
+      setCheckingUsername(true);
+      setUsernameStatus('checking');
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/users/register/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            username: formData.username,
+            email: `test${Date.now()}@test.com`,
+            password: 'testpass123',
+            re_password: 'testpass123'
+          })
+        });
+        
+        const data = await response.json();
+        
+        // Check if username error exists in response
+        if (data.username) {
+          const usernameError = Array.isArray(data.username) ? data.username[0] : data.username;
+          if (usernameError.toLowerCase().includes('already exists') || 
+              usernameError.toLowerCase().includes('taken') ||
+              usernameError.toLowerCase().includes('user with this username')) {
+            setUsernameStatus('taken');
+          } else {
+            setUsernameStatus('available');
+          }
+        } else if (!response.ok) {
+          // If response is not ok but no username error, assume available
+          setUsernameStatus('available');
+        } else {
+          // Registration would succeed, so username is available
+          setUsernameStatus('available');
+        }
+      } catch (error) {
+        setUsernameStatus('available');
+      } finally {
+        setCheckingUsername(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.username]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,12 +101,11 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const result = await register(formData.email, formData.password, formData.name);
+      const result = await register(formData.email, formData.password, formData.username);
       if (result.success) {
-        navigate("/");
+        navigate('/');
       }
     } catch (error) {
-      // Error already shown in AuthContext
       console.error('Registration error:', error);
     } finally {
       setLoading(false);
@@ -87,10 +146,10 @@ export default function Register() {
           onSubmit={handleSubmit}
           className="bg-gray-900/50 backdrop-blur-lg border border-gray-800 rounded-2xl p-8 shadow-2xl"
         >
-          {/* Name Field */}
+          {/* Username Field */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Full Name
+              Username
             </label>
             <div className="relative">
               <User
@@ -99,14 +158,37 @@ export default function Register() {
               />
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
                 required
-                className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                placeholder="Enter your full name"
+                minLength={3}
+                className={`w-full pl-10 pr-12 py-3 bg-gray-800/50 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                  usernameStatus === 'available' ? 'border-green-500 focus:ring-green-500' :
+                  usernameStatus === 'taken' ? 'border-red-500 focus:ring-red-500' :
+                  'border-gray-700 focus:ring-cyan-500'
+                }`}
+                placeholder="Choose a username"
               />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                {checkingUsername ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400"></div>
+                ) : usernameStatus === 'available' ? (
+                  <Check size={20} className="text-green-400" />
+                ) : usernameStatus === 'taken' ? (
+                  <X size={20} className="text-red-400" />
+                ) : null}
+              </div>
             </div>
+            {usernameStatus === 'available' && (
+              <p className="text-green-400 text-sm mt-1">✓ Username is available</p>
+            )}
+            {usernameStatus === 'taken' && (
+              <p className="text-red-400 text-sm mt-1">✗ Username is already taken</p>
+            )}
+            {formData.username.length > 0 && formData.username.length < 3 && (
+              <p className="text-yellow-400 text-sm mt-1">Username must be at least 3 characters</p>
+            )}
           </div>
 
           {/* Email Field */}
@@ -227,6 +309,8 @@ export default function Register() {
             </p>
           </div>
         </motion.form>
+
+
       </motion.div>
     </div>
   );

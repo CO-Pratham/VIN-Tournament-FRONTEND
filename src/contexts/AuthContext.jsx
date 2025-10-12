@@ -86,9 +86,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, name) => {
+  const register = async (email, password, username) => {
     try {
-      const response = await djangoService.register(email, password, name);
+      const response = await djangoService.register(email, password, username);
       
       toast.success('Account created successfully! You can now login.');
       return { success: true, message: "Registration successful" };
@@ -135,6 +135,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUserProfile = async () => {
+    try {
+      const profile = await fetchUserProfile();
+      if (profile) {
+        setUserProfile(profile);
+        setCurrentUser({ id: profile.id, email: profile.email, username: profile.username });
+      }
+      return profile;
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+      return null;
+    }
+  };
+
   const value = {
     currentUser,
     userProfile,
@@ -143,6 +157,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
+    refreshUserProfile,
   };
 
   return (

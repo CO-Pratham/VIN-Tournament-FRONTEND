@@ -1,15 +1,61 @@
 import { motion } from "framer-motion";
 import { Gamepad2, Users, Trophy } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTournaments } from "../store/slices/tournamentSlice";
+import { Link } from "react-router-dom";
 
 export default function Games() {
-  const games = [
-    { name: "BGMI", image: "/api/placeholder/300/200", players: "50M+", tournaments: 150 },
-    { name: "Free Fire", image: "/api/placeholder/300/200", players: "80M+", tournaments: 200 },
-    { name: "Valorant", image: "/api/placeholder/300/200", players: "15M+", tournaments: 75 },
-    { name: "COD Mobile", image: "/api/placeholder/300/200", players: "35M+", tournaments: 100 },
-    { name: "Fortnite", image: "/api/placeholder/300/200", players: "25M+", tournaments: 80 },
-    { name: "Apex Legends", image: "/api/placeholder/300/200", players: "12M+", tournaments: 60 }
-  ];
+  const dispatch = useDispatch();
+  const { items: tournaments, loading } = useSelector(state => state.tournaments);
+  const [gameStats, setGameStats] = useState([]);
+
+  useEffect(() => {
+    dispatch(fetchTournaments());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (Array.isArray(tournaments)) {
+      // Calculate stats for each game
+      const gameMap = {};
+      
+      tournaments.forEach(tournament => {
+        const gameName = tournament.game || 'unknown';
+        const gameKey = gameName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        
+        if (!gameMap[gameKey]) {
+          gameMap[gameKey] = {
+            name: formatGameName(gameName),
+            key: gameKey,
+            tournaments: 0,
+            players: 0,
+            image: getGameImage(gameName)
+          };
+        }
+        
+        gameMap[gameKey].tournaments += 1;
+        gameMap[gameKey].players += tournament.current_participants || 0;
+      });
+      
+      setGameStats(Object.values(gameMap));
+    }
+  }, [tournaments]);
+
+  const formatGameName = (gameName) => {
+    const gameNames = {
+      'bgmi': 'BGMI',
+      'free_fire': 'Free Fire',
+      'valorant': 'Valorant',
+      'cod_mobile': 'COD Mobile',
+      'fortnite': 'Fortnite',
+      'apex_legends': 'Apex Legends'
+    };
+    return gameNames[gameName.toLowerCase().replace(/[^a-z0-9]/g, '_')] || gameName.toUpperCase();
+  };
+
+  const getGameImage = (gameName) => {
+    return `https://via.placeholder.com/400x200?text=${encodeURIComponent(formatGameName(gameName))}`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black pt-20 pb-12 px-4">
@@ -23,8 +69,14 @@ export default function Games() {
           <p className="text-gray-400 text-lg">Choose your battlefield and dominate the competition</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {games.map((game, index) => (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+            <span className="ml-3 text-gray-400">Loading games...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {gameStats.length > 0 ? gameStats.map((game, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -46,7 +98,7 @@ export default function Games() {
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-2 text-gray-400">
                     <Users className="w-4 h-4" />
-                    <span>{game.players} Players</span>
+                    <span>{game.players} Active Players</span>
                   </div>
                   <div className="flex items-center gap-2 text-cyan-400">
                     <Trophy className="w-4 h-4" />
@@ -54,13 +106,26 @@ export default function Games() {
                   </div>
                 </div>
                 
-                <button className="w-full bg-gradient-to-r from-cyan-500 to-pink-500 text-white py-3 rounded-lg font-bold hover:from-cyan-600 hover:to-pink-600 transition-all">
-                  View Tournaments
-                </button>
+                <Link to={`/tournaments?game=${game.key}`}>
+                  <button className="w-full bg-gradient-to-r from-cyan-500 to-pink-500 text-white py-3 rounded-lg font-bold hover:from-cyan-600 hover:to-pink-600 transition-all">
+                    View Tournaments
+                  </button>
+                </Link>
               </div>
             </motion.div>
-          ))}
-        </div>
+            )) : (
+              <div className="col-span-full text-center py-12">
+                <Gamepad2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-400 mb-2">
+                  No games available
+                </h3>
+                <p className="text-gray-500">
+                  Create tournaments to see games here
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

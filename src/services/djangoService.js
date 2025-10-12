@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+import { API_CONFIG, buildUrl, getEndpoint } from '../config/api.js';
 
 class DjangoService {
   constructor() {
@@ -23,7 +23,7 @@ class DjangoService {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = buildUrl(endpoint);
     const config = {
       headers: this.getHeaders(),
       ...options,
@@ -36,7 +36,7 @@ class DjangoService {
         // Handle different error cases
         if (response.status === 401) {
           // For login endpoint, 401 means invalid credentials
-          if (endpoint === '/auth/jwt/create/') {
+          if (endpoint.includes('/auth/jwt/create/')) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.detail || 'Invalid email or password');
           } else {
@@ -73,6 +73,11 @@ class DjangoService {
             throw new Error(fieldErrors.join('; '));
           }
           
+          // Handle array errors (like Djoser's generic errors)
+          if (Array.isArray(errorData)) {
+            throw new Error(errorData.join('; '));
+          }
+          
           throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
         } catch (error) {
           if (error.message && !error.message.includes('HTTP error!')) {
@@ -82,7 +87,14 @@ class DjangoService {
         }
       }
       
-      return await response.json();
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      try {
+        return JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse JSON:', responseText);
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+      }
     } catch (error) {
       console.error('API request failed:', error);
       throw error;
@@ -91,7 +103,7 @@ class DjangoService {
 
   // Authentication methods
   async login(email, password) {
-    const response = await this.request('/auth/jwt/create/', {
+    const response = await this.request(getEndpoint('LOGIN'), {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -113,13 +125,13 @@ class DjangoService {
       .replace(/\s+/g, '_')
       .replace(/[^a-z0-9@.+_-]/g, '');
     
-    const response = await this.request('/auth/users/', {
+    const response = await this.request(getEndpoint('REGISTER'), {
       method: 'POST',
       body: JSON.stringify({ 
         email, 
         password, 
-        username: sanitizedUsername,
-        re_password: password 
+        re_password: password,
+        username: sanitizedUsername
       }),
     });
     
@@ -128,7 +140,7 @@ class DjangoService {
 
   async logout() {
     try {
-      await this.request('/auth/logout/', {
+      await this.request(getEndpoint('LOGOUT'), {
         method: 'POST',
       });
     } catch (error) {
@@ -142,18 +154,18 @@ class DjangoService {
 
   // User profile methods
   async getUserProfile() {
-    return await this.request('/users/profile/me/');
+    return await this.request(getEndpoint('USER_PROFILE'));
   }
 
   async updateUserProfile(updates) {
-    return await this.request('/users/profile/', {
+    return await this.request(getEndpoint('UPDATE_PROFILE'), {
       method: 'PATCH',
       body: JSON.stringify(updates),
     });
   }
 
   async generateGamingId() {
-    const response = await this.request('/users/profile/generate-gaming-id/', {
+    const response = await this.request(getEndpoint('GENERATE_GAMING_ID'), {
       method: 'POST',
     });
     return response.gaming_id;
@@ -161,12 +173,12 @@ class DjangoService {
 
   // Tournament methods
   async getAllTournaments() {
-    const response = await this.request('/tournaments/');
+    const response = await this.request(getEndpoint('TOURNAMENTS'));
     return response.results || response;
   }
 
   async getTournamentById(id) {
-    return await this.request(`/tournaments/${id}/`);
+    return await this.request(getEndpoint('TOURNAMENT_DETAIL', id));
   }
 
   async createTournament(tournamentData) {
@@ -186,20 +198,21 @@ class DjangoService {
     
     console.log('Sending tournament data:', transformedData);
     
-    return await this.request('/tournaments/', {
+    return await this.request(getEndpoint('TOURNAMENTS'), {
       method: 'POST',
       body: JSON.stringify(transformedData),
     });
   }
 
-  async joinTournament(tournamentId) {
-    return await this.request(`/tournaments/${tournamentId}/join/`, {
+  async joinTournament(tournamentId, joinData = {}) {
+    return await this.request(getEndpoint('JOIN_TOURNAMENT', tournamentId), {
       method: 'POST',
+      body: JSON.stringify(joinData),
     });
   }
 
   async leaveTournament(tournamentId) {
-    return await this.request(`/tournaments/${tournamentId}/leave/`, {
+    return await this.request(getEndpoint('LEAVE_TOURNAMENT', tournamentId), {
       method: 'POST',
     });
   }
@@ -212,7 +225,7 @@ class DjangoService {
 
   // Player search methods
   async searchPlayers(searchTerm) {
-    return await this.request(`/users/search/?search=${encodeURIComponent(searchTerm)}`);
+    return await this.request(`${getEndpoint('SEARCH_USERS')}?search=${encodeURIComponent(searchTerm)}`);
   }
 
   async getUserById(userId) {

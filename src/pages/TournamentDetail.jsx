@@ -29,6 +29,12 @@ export default function TournamentDetail() {
   
   const tournament = currentTournament || tournaments.find(t => t.id === id);
   const [isJoining, setIsJoining] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinData, setJoinData] = useState({
+    ingame_uid: '',
+    tier: '',
+    team_name: ''
+  });
   
   // Debug tournament data
   console.log('Tournament data:', tournament);
@@ -38,16 +44,29 @@ export default function TournamentDetail() {
     dispatch(fetchTournamentById(id));
   }, [id, dispatch]);
 
-  const handleJoinTournament = async () => {
+  const handleJoinClick = () => {
     if (!currentUser) {
       toast.error("Please login to join tournaments");
+      return;
+    }
+    setShowJoinModal(true);
+  };
+
+  const handleJoinTournament = async () => {
+    if (!joinData.ingame_uid.trim()) {
+      toast.error("Please enter your in-game UID");
       return;
     }
 
     setIsJoining(true);
     try {
-      await dispatch(joinTournament(tournament.id)).unwrap();
+      await dispatch(joinTournament({ 
+        tournamentId: tournament.id, 
+        joinData 
+      })).unwrap();
       await dispatch(fetchTournamentById(id));
+      setShowJoinModal(false);
+      setJoinData({ ingame_uid: '', tier: '', team_name: '' });
       toast.success('Successfully joined tournament!');
     } catch (error) {
       console.error('Join tournament error:', error);
@@ -305,12 +324,11 @@ export default function TournamentDetail() {
                 </div>
               ) : (
                 <button
-                  onClick={handleJoinTournament}
-                  disabled={isJoining || !currentUser || tournament.status !== 'upcoming' || tournament.current_participants >= tournament.max_participants}
+                  onClick={handleJoinClick}
+                  disabled={!currentUser || tournament.status !== 'upcoming' || tournament.current_participants >= tournament.max_participants}
                   className="w-full bg-gradient-to-r from-cyan-500 to-pink-500 text-white font-bold py-4 px-6 rounded-xl hover:from-cyan-600 hover:to-pink-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isJoining ? "Joining..." : 
-                   !currentUser ? "Please login to join" :
+                  {!currentUser ? "Please login to join" :
                    tournament.status !== 'upcoming' ? "Registration closed" :
                    tournament.current_participants >= tournament.max_participants ? "Tournament full" :
                    `Join Tournament - ₹${tournament.entry_fee}`}
@@ -342,6 +360,72 @@ export default function TournamentDetail() {
           </div>
         </div>
       </div>
+
+      {/* Join Tournament Modal */}
+      {showJoinModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md"
+          >
+            <h3 className="text-xl font-bold text-white mb-4">Join Tournament</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  In-Game UID *
+                </label>
+                <input
+                  type="text"
+                  value={joinData.ingame_uid}
+                  onChange={(e) => setJoinData({...joinData, ingame_uid: e.target.value})}
+                  placeholder="Enter your in-game UID"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Current Tier/Rank
+                </label>
+                <input
+                  type="text"
+                  value={joinData.tier}
+                  onChange={(e) => setJoinData({...joinData, tier: e.target.value})}
+                  placeholder="e.g., Diamond, Conqueror, etc."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">
+                  Team Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={joinData.team_name}
+                  onChange={(e) => setJoinData({...joinData, team_name: e.target.value})}
+                  placeholder="Enter team name if applicable"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowJoinModal(false)}
+                className="flex-1 bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleJoinTournament}
+                disabled={isJoining || !joinData.ingame_uid.trim()}
+                className="flex-1 bg-gradient-to-r from-cyan-500 to-pink-500 text-white py-2 px-4 rounded-lg hover:from-cyan-600 hover:to-pink-600 transition-all disabled:opacity-50"
+              >
+                {isJoining ? "Joining..." : "Join Tournament"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

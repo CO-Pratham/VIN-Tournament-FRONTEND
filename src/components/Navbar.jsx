@@ -22,7 +22,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, userProfile, refreshUserProfile } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +31,8 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+
 
   const { logout } = useAuth();
 
@@ -53,15 +55,15 @@ export default function Navbar() {
 
 
 
+  const isSpecialTab = ['/tournaments', '/games', '/leaderboard', '/players'].includes(location.pathname);
+
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+    <nav
+      className={`sticky top-0 left-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-black/90 backdrop-blur-xl border-b border-gray-800/50"
-          : "bg-black/70 backdrop-blur-lg border-b border-gray-800"
-      } px-6 py-3`}
+          ? "bg-gradient-to-r from-black/95 via-gray-900/95 to-black/95 backdrop-blur-xl border-b border-cyan-500/30 shadow-lg shadow-cyan-500/10"
+          : "bg-gradient-to-r from-black/80 via-gray-900/80 to-black/80 backdrop-blur-lg border-b border-gray-700/50"
+      } px-6 py-4`}
     >
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         {/* Logo */}
@@ -79,26 +81,48 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex gap-8 text-gray-300 font-medium">
+        <div className="hidden md:flex gap-6 text-gray-300 font-medium">
           {navItems.map((item) => (
-            <Link
+            <motion.div
               key={item.path}
-              to={item.path}
-              className={`relative flex items-center gap-2 hover:text-cyan-400 transition-colors ${
-                location.pathname === item.path ? "text-cyan-400" : ""
-              }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative"
             >
-              <item.icon size={18} />
-              {item.name}
+              <Link
+                to={item.path}
+                className={`relative flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 ${
+                  location.pathname === item.path 
+                    ? "text-cyan-400 bg-cyan-400/10 shadow-lg shadow-cyan-400/20" 
+                    : "hover:text-cyan-400 hover:bg-cyan-400/5 hover:shadow-md"
+                }`}
+              >
+                <motion.div
+                  animate={{
+                    rotate: location.pathname === item.path ? 360 : 0,
+                    scale: location.pathname === item.path ? 1.1 : 1
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <item.icon size={18} />
+                </motion.div>
+                {item.name}
+              </Link>
               {location.pathname === item.path && (
                 <motion.div
-                  layoutId="activeTab"
-                  className="absolute -bottom-2 left-0 right-0 h-0.5 bg-cyan-400"
+                  initial={{ y: -20, opacity: 0, scaleX: 0 }}
+                  animate={{ y: 0, opacity: 1, scaleX: 1 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 20,
+                    delay: 0.1
+                  }}
+                  className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-gradient-to-r from-cyan-400 to-pink-400 rounded-full shadow-lg shadow-cyan-400/50"
                 />
               )}
-            </Link>
+            </motion.div>
           ))}
-
         </div>
 
         {/* User Menu / Auth Buttons */}
@@ -106,9 +130,10 @@ export default function Navbar() {
           {currentUser ? (
             <div className="relative">
               <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-pink-500 hover:from-cyan-400 hover:to-pink-400 px-4 py-2 rounded-full text-white font-semibold transition-all"
+                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-pink-500 hover:from-cyan-400 hover:via-blue-400 hover:to-pink-400 px-5 py-2.5 rounded-full text-white font-semibold transition-all duration-300 shadow-lg shadow-cyan-500/25 border border-cyan-400/30"
               >
                 <UserCircle size={22} />
                 {currentUser?.username || currentUser?.email || "User"}
@@ -117,10 +142,11 @@ export default function Navbar() {
               <AnimatePresence>
                 {showUserMenu && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl"
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="absolute right-0 mt-3 w-52 bg-gradient-to-br from-gray-900 to-black border border-cyan-500/30 rounded-xl shadow-2xl shadow-cyan-500/10 backdrop-blur-lg"
                   >
                     <Link
                       to="/profile"
@@ -130,15 +156,8 @@ export default function Navbar() {
                       <User size={16} />
                       Profile
                     </Link>
-                    <Link
-                      to="/email-verify"
-                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-800 transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Mail size={16} />
-                      Email Verification
-                    </Link>
-                    {userProfile?.role === "admin" && (
+
+                    {(currentUser?.email === 'prathamg0000@gmail.com' || userProfile?.role === 'admin') && (
                       <Link
                         to="/admin"
                         className="flex items-center gap-2 px-4 py-2 hover:bg-gray-800 transition-colors border-t border-gray-700"
@@ -173,16 +192,18 @@ export default function Navbar() {
             <div className="flex gap-2">
               <Link to="/login">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  className="px-4 py-2 text-cyan-400 border border-cyan-400 rounded-full hover:bg-cyan-400 hover:text-black transition-all"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2.5 text-cyan-400 border-2 border-cyan-400 rounded-full hover:bg-cyan-400 hover:text-black transition-all duration-300 font-semibold shadow-lg shadow-cyan-400/20"
                 >
                   Login
                 </motion.button>
               </Link>
               <Link to="/register">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-pink-500 text-white rounded-full hover:from-cyan-400 hover:to-pink-400 transition-all"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-pink-500 text-white rounded-full hover:from-cyan-400 hover:via-blue-400 hover:to-pink-400 transition-all duration-300 font-semibold shadow-lg shadow-cyan-500/25 border border-cyan-400/30"
                 >
                   Sign Up
                 </motion.button>
@@ -206,10 +227,11 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-black/95 border-t border-gray-800 mt-3 pt-4"
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="md:hidden bg-gradient-to-b from-black/95 to-gray-900/95 border-t border-cyan-500/30 mt-4 pt-4 backdrop-blur-lg"
           >
             {navItems.map((item) => (
               <Link
@@ -270,6 +292,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </nav>
   );
 }

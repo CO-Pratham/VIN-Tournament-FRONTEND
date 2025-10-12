@@ -42,13 +42,11 @@ export const createTournament = createAsyncThunk(
 
 export const joinTournament = createAsyncThunk(
   'tournaments/join',
-  async (tournamentId, { rejectWithValue }) => {
+  async ({ tournamentId, joinData }, { rejectWithValue }) => {
     try {
-      await djangoService.joinTournament(tournamentId);
-      toast.success('Successfully joined tournament!');
+      await djangoService.joinTournament(tournamentId, joinData);
       return tournamentId;
     } catch (error) {
-      toast.error(error.message);
       return rejectWithValue(error.message);
     }
   }

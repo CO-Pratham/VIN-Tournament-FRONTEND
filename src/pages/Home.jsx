@@ -480,9 +480,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="relative z-10 py-6 bg-black/90 text-center text-gray-400 text-sm">
-        © {new Date().getFullYear()} Vin Tournament • Play • Compete • Earn
-      </footer>
+
     </div>
   );
 }
