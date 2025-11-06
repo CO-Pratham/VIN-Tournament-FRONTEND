@@ -5,7 +5,7 @@ export const testApiConnection = async () => {
     const apiUrl = import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:8000'
-            : 'https://vin-tournament-backend.up.railway.app');
+            : 'http://localhost:8000');
 
     console.log('🔍 Testing API connection...');
     console.log('📍 API URL:', apiUrl);

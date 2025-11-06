@@ -30,7 +30,7 @@ class WebSocketService {
         if (isLocalhost) {
           return 'http://localhost:8000';
         }
-        return 'https://vin-tournament-backend.up.railway.app';
+        return 'http://localhost:8000';
       };
 
       const apiUrl = getApiUrl();

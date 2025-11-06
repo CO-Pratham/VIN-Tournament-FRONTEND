@@ -13,11 +13,8 @@ const getApiBaseUrl = () => {
     return 'http://localhost:8000';
   }
 
-  // Priority 3: Production - use Railway public URL
-  // IMPORTANT: Replace 'vin-tournament-backend.up.railway.app' with your actual Railway public domain!
-  // Find it in Railway dashboard → Settings → Public Networking → Generate Domain
-  // Format: https://your-service-name.up.railway.app
-  return 'https://vin-tournament-backend.up.railway.app';
+  // Priority 3: Default to local backend when not explicitly configured
+  return 'http://localhost:8000';
 };
 
 export const API_CONFIG = {
