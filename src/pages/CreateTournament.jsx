@@ -99,20 +99,19 @@ export default function CreateTournament() {
 
 
     const tournamentDateTime = new Date(`${formData.date}T${formData.time}`);
-    
+
     const tournamentData = {
       title: formData.title,
-      game: formData.game,
-      mode: formData.mode,
+      game_type: formData.game,
+      tournament_type: formData.mode,
       entry_fee: parseInt(formData.entryFee) || 0,
-      prize: parseInt(formData.prize) || 0,
+      prize_pool: parseInt(formData.prize) || 0,
       max_participants: parseInt(formData.maxParticipants) || 100,
-      date: tournamentDateTime.toISOString(),
-      map: formData.map,
+      start_date: tournamentDateTime.toISOString(),
+      end_date: tournamentDateTime.toISOString(),
+      registration_deadline: tournamentDateTime.toISOString(),
       description: formData.description,
       rules: formData.rules,
-      status: 'upcoming',
-      organizer_id: currentUser.uid
     };
 
 

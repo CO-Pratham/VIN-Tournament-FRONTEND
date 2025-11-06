@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTournamentById, joinTournament, leaveTournament } from "../store/slices/tournamentSlice";
+import { fetchTournamentDetails, joinTournament, leaveTournament } from "../store/slices/tournamentSlice";
+import { fetchNotifications } from "../store/slices/notificationSlice";
 import toast from "react-hot-toast";
 
 export default function TournamentDetail() {
@@ -25,9 +26,9 @@ export default function TournamentDetail() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const dispatch = useDispatch();
-  const { items: tournaments, currentTournament, loading } = useSelector((state) => state.tournaments);
-  
-  const tournament = currentTournament || tournaments.find(t => t.id === id);
+  const { tournaments, selectedTournament, loading } = useSelector((state) => state.tournaments);
+
+  const tournament = selectedTournament || tournaments.find(t => t.id === parseInt(id));
   const [isJoining, setIsJoining] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [joinData, setJoinData] = useState({
@@ -41,7 +42,7 @@ export default function TournamentDetail() {
   console.log('Current user:', currentUser);
 
   useEffect(() => {
-    dispatch(fetchTournamentById(id));
+    dispatch(fetchTournamentDetails(id));
   }, [id, dispatch]);
 
   const handleJoinClick = () => {
@@ -54,6 +55,7 @@ export default function TournamentDetail() {
 
   const handleJoinTournament = async () => {
     if (!joinData.ingame_uid.trim()) {
+      // Keep toast for validation errors (not notification-worthy)
       toast.error("Please enter your in-game UID");
       return;
     }
@@ -64,10 +66,12 @@ export default function TournamentDetail() {
         tournamentId: tournament.id, 
         joinData 
       })).unwrap();
-      await dispatch(fetchTournamentById(id));
+      await dispatch(fetchTournamentDetails(id));
       setShowJoinModal(false);
       setJoinData({ ingame_uid: '', tier: '', team_name: '' });
-      toast.success('Successfully joined tournament!');
+      
+      // Fetch notifications to show the join notification
+      dispatch(fetchNotifications());
     } catch (error) {
       console.error('Join tournament error:', error);
       toast.error(error.message || 'Failed to join tournament');
@@ -84,8 +88,10 @@ export default function TournamentDetail() {
     setIsJoining(true);
     try {
       await dispatch(leaveTournament(tournament.id)).unwrap();
-      await dispatch(fetchTournamentById(id));
-      toast.success('Tournament withdrawal successful! Your entry fee of ₹' + tournament.entry_fee + ' will be refunded to your account within 3-4 working days.');
+      await dispatch(fetchTournamentDetails(id));
+      
+      // Fetch notifications after leaving (if backend sends one)
+      dispatch(fetchNotifications());
     } catch (error) {
       console.error('Withdraw tournament error:', error);
       toast.error(error.message || 'Failed to withdraw from tournament');

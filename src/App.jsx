@@ -1,12 +1,14 @@
-import { Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { store } from "./store/store";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import LoadingScreen from "./components/LoadingScreen";
+import PrivateRoute from "./components/PrivateRoute";
+import AuthPromptModal from "./components/AuthPromptModal";
 
 import Home from "./pages/Home";
 import Tournaments from "./pages/Tournaments";
@@ -23,30 +25,189 @@ import PlayerSearch from "./pages/PlayerSearch";
 import TestAuth from "./pages/TestAuth";
 import AdminPanel from "./pages/AdminPanel";
 import Settings from "./pages/Settings";
-
+import Gamification from "./pages/Gamification";
+import Fantasy from "./pages/Fantasy";
+import Community from "./pages/Community";
+import AIFeatures from "./pages/AIFeatures";
+import Notifications from "./pages/Notifications";
+import Dashboard from "./pages/Dashboard";
+import About from "./pages/About";
+import Pricing from "./pages/Pricing";
 
 function AppContent() {
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+
+  // Don't show navbar on dashboard pages
+  const showNavbar =
+    !location.pathname.startsWith("/dashboard") &&
+    !location.pathname.startsWith("/tournaments") &&
+    !location.pathname.startsWith("/leaderboard") &&
+    !location.pathname.startsWith("/gamification") &&
+    !location.pathname.startsWith("/fantasy") &&
+    !location.pathname.startsWith("/community") &&
+    !location.pathname.startsWith("/ai-features") &&
+    !location.pathname.startsWith("/profile") &&
+    !location.pathname.startsWith("/settings");
+
   return (
     <div className="bg-black text-white min-h-screen flex flex-col">
-      <Navbar />
+      {showNavbar && <Navbar />}
+      {/* Auth Prompt Modal - Shows on public pages for non-authenticated users */}
+      <AuthPromptModal />
       <main className="flex-1">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/tournaments" element={<Tournaments />} />
           <Route path="/games" element={<Games />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/about" element={<About />} />
+
+          {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/create-tournament" element={<CreateTournament />} />
-          <Route path="/tournament/:id" element={<TournamentDetail />} />
-          <Route path="/tournament/:id/join" element={<JoinTournament />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+
+          {/* Protected Routes - Require Authentication */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/tournaments"
+            element={
+              <PrivateRoute>
+                <Tournaments />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/leaderboard"
+            element={
+              <PrivateRoute>
+                <Leaderboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/gamification"
+            element={
+              <PrivateRoute>
+                <Gamification />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/fantasy"
+            element={
+              <PrivateRoute>
+                <Fantasy />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/community"
+            element={
+              <PrivateRoute>
+                <Community />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/ai-features"
+            element={
+              <PrivateRoute>
+                <AIFeatures />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/pricing"
+            element={
+              <PrivateRoute>
+                <Pricing />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/create-tournament"
+            element={
+              <PrivateRoute>
+                <CreateTournament />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/tournament/:id"
+            element={
+              <PrivateRoute>
+                <TournamentDetail />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/tournament/:id/join"
+            element={
+              <PrivateRoute>
+                <JoinTournament />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <PrivateRoute>
+                <Notifications />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Semi-Protected Routes - Can view but limited functionality */}
           <Route path="/player/:userId" element={<PublicProfile />} />
           <Route path="/players" element={<PlayerSearch />} />
-          <Route path="/test-auth" element={<TestAuth />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/settings" element={<Settings />} />
 
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminPanel />
+              </PrivateRoute>
+            }
+          />
+
+          <Route path="/test-auth" element={<TestAuth />} />
         </Routes>
       </main>
       <Footer />
@@ -57,14 +218,14 @@ function AppContent() {
 export default function App() {
   const [loading, setLoading] = useState(() => {
     // Only show loading screen if this is the first visit
-    return !sessionStorage.getItem('hasVisited');
+    return !sessionStorage.getItem("hasVisited");
   });
 
   useEffect(() => {
     if (loading) {
       const timer = setTimeout(() => {
         setLoading(false);
-        sessionStorage.setItem('hasVisited', 'true');
+        sessionStorage.setItem("hasVisited", "true");
       }, 5500);
 
       return () => clearTimeout(timer);

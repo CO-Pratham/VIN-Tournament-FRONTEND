@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Shield, Star, Trophy, Users, Gamepad2, Calendar, MapPin } from 'lucide-react';
+import { Crown, Shield, Star, Trophy, Users, Gamepad2, Calendar, MapPin, CheckCircle } from 'lucide-react';
 import GameBadges from './GameBadges';
 import BadgeSystem from './BadgeSystem';
 
@@ -149,8 +149,16 @@ export default function ProfileCard({ user, isOpen, onClose }) {
 
           {/* User Info */}
           <div className="text-center mb-4">
-            <h3 className="text-xl font-bold text-white mb-1">{user.username}</h3>
-            <p className="text-gray-400 text-sm mb-2">#{user.player_id}</p>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h3 className="text-xl font-bold text-white">{user.username}</h3>
+              {user.is_verified && (
+                <div className="inline-flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 px-2 py-0.5 rounded-full shadow-lg">
+                  <CheckCircle size={12} className="text-white" />
+                  <span className="text-white font-bold text-xs">Verified</span>
+                </div>
+              )}
+            </div>
+            <p className="text-gray-400 text-sm mb-2">#{user.gaming_id || user.player_id || 'N/A'}</p>
             
             {/* Role Badge */}
             <motion.div

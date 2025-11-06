@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { djangoService } from '../services/djangoService';
+import api from '../services/api';
 
 export default function TestAuth() {
   const [email, setEmail] = useState('prathamg030@gmail.com');

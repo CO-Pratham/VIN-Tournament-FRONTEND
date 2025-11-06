@@ -58,3 +58,6 @@ ehthumbs.db
 .firebase
 firebase-debug.log
 firestore-debug.log
+
+# Local Netlify folder
+.netlify

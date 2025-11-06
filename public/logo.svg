@@ -1,26 +1,85 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="logoGradient" cx="0.3" cy="0.3" r="0.8">
-      <stop offset="0%" stop-color="#FF0040"/>
-      <stop offset="50%" stop-color="#8B5CF6"/>
-      <stop offset="100%" stop-color="#0066FF"/>
-    </radialGradient>
+    <!-- Main gradient for background -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F0F23"/>
+      <stop offset="50%" stop-color="#1A1A3A"/>
+      <stop offset="100%" stop-color="#0F0F23"/>
+    </linearGradient>
+
+    <!-- Gaming controller gradient -->
+    <linearGradient id="controllerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B35"/>
+      <stop offset="50%" stop-color="#F7931E"/>
+      <stop offset="100%" stop-color="#FFD23F"/>
+    </linearGradient>
+
+    <!-- Trophy gradient -->
+    <linearGradient id="trophyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="50%" stop-color="#FFA500"/>
+      <stop offset="100%" stop-color="#FF8C00"/>
+    </linearGradient>
+
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  
-  <!-- Outer Circle -->
-  <circle cx="256" cy="256" r="256" fill="url(#logoGradient)"/>
-  
-  <!-- Controller Body -->
-  <rect x="170" y="210" width="172" height="92" rx="46" ry="46" fill="white"/>
-  
-  <!-- D-Pad Circle -->
-  <circle cx="220" cy="256" r="36" fill="none" stroke="#8B5CF6" stroke-width="4"/>
-  
-  <!-- D-Pad Cross -->
-  <rect x="210" y="240" width="20" height="32" rx="2" fill="#C41E3A"/>
-  <rect x="204" y="246" width="32" height="20" rx="2" fill="#C41E3A"/>
-  
-  <!-- Action Buttons -->
-  <circle cx="292" cy="240" r="8" fill="#4F46E5"/>
-  <circle cx="292" cy="272" r="8" fill="#4F46E5"/>
+
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#bgGradient)"/>
+
+  <!-- Outer Ring -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#controllerGradient)" stroke-width="8" opacity="0.3"/>
+
+  <!-- Gaming Controller Base -->
+  <path d="M 180 240 Q 180 220 200 220 L 312 220 Q 332 220 332 240 L 332 280 Q 332 300 312 300 L 200 300 Q 180 300 180 280 Z"
+        fill="url(#controllerGradient)" filter="url(#glow)"/>
+
+  <!-- Controller Details -->
+  <!-- Left D-Pad -->
+  <circle cx="220" cy="260" r="25" fill="none" stroke="#1A1A3A" stroke-width="3"/>
+  <rect x="215" y="248" width="10" height="24" rx="2" fill="#1A1A3A"/>
+  <rect x="208" y="255" width="24" height="10" rx="2" fill="#1A1A3A"/>
+
+  <!-- Right Action Buttons -->
+  <circle cx="292" cy="245" r="8" fill="#1A1A3A"/>
+  <circle cx="292" cy="275" r="8" fill="#1A1A3A"/>
+  <circle cx="277" cy="260" r="8" fill="#1A1A3A"/>
+  <circle cx="307" cy="260" r="8" fill="#1A1A3A"/>
+
+  <!-- Trophy on top -->
+  <path d="M 240 180 L 272 180 L 275 190 L 237 190 Z" fill="url(#trophyGradient)"/>
+  <path d="M 245 190 L 267 190 L 265 200 L 247 200 Z" fill="url(#trophyGradient)"/>
+  <rect x="252" y="200" width="8" height="15" fill="url(#trophyGradient)"/>
+  <ellipse cx="256" cy="215" rx="15" ry="5" fill="url(#trophyGradient)"/>
+
+  <!-- Trophy handles -->
+  <path d="M 237 185 Q 225 185 225 195 Q 225 205 237 205" fill="none" stroke="url(#trophyGradient)" stroke-width="3"/>
+  <path d="M 275 185 Q 287 185 287 195 Q 287 205 275 205" fill="none" stroke="url(#trophyGradient)" stroke-width="3"/>
+
+  <!-- Central VIN text -->
+  <text x="256" y="350" font-family="Arial Black, sans-serif" font-size="36" font-weight="bold"
+        text-anchor="middle" fill="url(#controllerGradient)" filter="url(#glow)">VIN</text>
+
+  <!-- Subtitle -->
+  <text x="256" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="normal"
+        text-anchor="middle" fill="#FF6B35" opacity="0.8">TOURNAMENT</text>
+
+  <!-- Decorative elements -->
+  <circle cx="150" cy="150" r="3" fill="#FF6B35" opacity="0.6"/>
+  <circle cx="362" cy="150" r="3" fill="#FF6B35" opacity="0.6"/>
+  <circle cx="150" cy="362" r="3" fill="#FF6B35" opacity="0.6"/>
+  <circle cx="362" cy="362" r="3" fill="#FF6B35" opacity="0.6"/>
+
+  <!-- Gaming elements -->
+  <polygon points="100,100 110,90 120,100 110,110" fill="#FFD23F" opacity="0.4"/>
+  <polygon points="392,100 402,90 412,100 402,110" fill="#FFD23F" opacity="0.4"/>
+  <polygon points="100,412 110,402 120,412 110,422" fill="#FFD23F" opacity="0.4"/>
+  <polygon points="392,412 402,402 412,412 402,422" fill="#FFD23F" opacity="0.4"/>
 </svg>

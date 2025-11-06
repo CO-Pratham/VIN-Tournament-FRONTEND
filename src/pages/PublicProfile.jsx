@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Trophy, Calendar, Gamepad2, Users, ArrowLeft } from "lucide-react";
+import { User, Trophy, Calendar, Gamepad2, Users, ArrowLeft, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPublicProfile } from "../store/slices/leaderboardSlice";
@@ -65,9 +65,17 @@ export default function PublicProfile() {
                 {(profile.username || profile.email)?.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-white">{profile.username || profile.email}</h2>
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-3xl font-bold text-white">{profile.username || profile.email}</h2>
+                  {profile.is_verified && (
+                    <div className="inline-flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-500 px-3 py-1 rounded-full shadow-lg">
+                      <CheckCircle size={16} className="text-white" />
+                      <span className="text-white font-bold text-xs">Verified</span>
+                    </div>
+                  )}
+                </div>
                 <p className="text-cyan-400 font-medium text-lg">
-                  Gaming ID: {profile.gaming_id || 'Not set'}
+                  ID: {profile.gaming_id || 'Not set'}
                 </p>
                 <p className="text-gray-300 flex items-center gap-2 mt-2">
                   <Gamepad2 className="w-4 h-4" />

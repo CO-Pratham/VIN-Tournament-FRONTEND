@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { djangoService } from '../../services/djangoService';
+import api from '../../services/api';
 
 export const fetchUserTournaments = createAsyncThunk(
   'users/fetchTournaments',
   async (userId, { rejectWithValue }) => {
     try {
-      const tournaments = await djangoService.getAllTournaments();
+      const tournaments = await api.getTournaments();
       console.log('All tournaments:', tournaments);
       console.log('Current user ID:', userId);
       

@@ -4,7 +4,7 @@ import { Trophy, Users, Eye, Check, X, Lock, AlertCircle, Crown, Search } from '
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { djangoService } from '../services/djangoService';
+import api from '../services/api';
 import ProfileCard from '../components/ProfileCard';
 import RoleManager from '../components/RoleManager';
 import toast from 'react-hot-toast';
@@ -75,7 +75,7 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     try {
-      const response = await djangoService.request('/api/users/search/?search=');
+      const response = await api.request('/users/search/?search=');
       setUsers(response);
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -84,7 +84,7 @@ export default function AdminPanel() {
 
   const handleRoleUpdate = async (userId, newRole) => {
     try {
-      await djangoService.request(`/api/users/${userId}/role/`, {
+      await api.request(`/users/${userId}/role/`, {
         method: 'POST',
         body: JSON.stringify({ role: newRole })
       });
@@ -107,7 +107,7 @@ export default function AdminPanel() {
       return;
     }
     try {
-      const response = await djangoService.request(`/api/users/search/?search=${searchQuery}`);
+      const response = await api.request(`/users/search/?search=${searchQuery}`);
       setUsers(response);
     } catch (error) {
       toast.error('Search failed');
@@ -116,7 +116,7 @@ export default function AdminPanel() {
 
   const fetchTournaments = async () => {
     try {
-      const data = await djangoService.getAllTournaments();
+      const data = await api.getTournaments();
       setTournaments(data.filter(t => t.status === 'completed'));
     } catch (error) {
       toast.error('Failed to fetch tournaments');
@@ -126,7 +126,7 @@ export default function AdminPanel() {
   const fetchParticipants = async (tournamentId) => {
     try {
       setLoading(true);
-      const response = await djangoService.request(`/api/tournaments/${tournamentId}/participants_with_uids/`);
+      const response = await api.request(`/tournaments/${tournamentId}/participants_with_uids/`);
       setParticipants(response);
     } catch (error) {
       toast.error('Failed to fetch participants');
@@ -138,7 +138,7 @@ export default function AdminPanel() {
 
   const declareResults = async (tournamentId, resultsData) => {
     try {
-      await djangoService.request(`/api/tournaments/${tournamentId}/declare_results/`, {
+      await api.request(`/tournaments/${tournamentId}/declare_results/`, {
         method: 'POST',
         body: JSON.stringify({ results: resultsData })
       });
